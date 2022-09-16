@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stddef.h>
 #include "coap.h"
+#include "byte_order.h"
 
 #ifdef DEBUG
 void coap_dumpHeader(coap_header_t *hdr)
@@ -14,7 +15,7 @@ void coap_dumpHeader(coap_header_t *hdr)
     printf("  t    0x%02X\n", hdr->t);
     printf("  tkl  0x%02X\n", hdr->tkl);
     printf("  code 0x%02X\n", hdr->code);
-    printf("  id   0x%02X%02X\n", hdr->id[0], hdr->id[1]);
+    printf("  id   0x%02X%02X\n", (uint8_t)((hdr->id) >> 8), (uint8_t)(hdr->id));
 }
 #endif
 
@@ -46,8 +47,7 @@ int coap_parseHeader(coap_header_t *hdr, const uint8_t *buf, size_t buflen)
     hdr->t = (buf[0] & 0x30) >> 4;
     hdr->tkl = buf[0] & 0x0F;
     hdr->code = buf[1];
-    hdr->id[0] = buf[2];
-    hdr->id[1] = buf[3];
+    hdr->id = endian_load16(uint16_t, &buf[2]);
     return 0;
 }
 
@@ -274,9 +274,8 @@ int coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
     buf[0] |= (pkt->hdr.t & 0x03) << 4;
     buf[0] |= (pkt->hdr.tkl & 0x0F);
     buf[1] = pkt->hdr.code;
-    buf[2] = pkt->hdr.id[0];
-    buf[3] = pkt->hdr.id[1];
-
+    endian_store16(&buf[2], pkt->hdr.id);
+    
     // inject token
     p = buf + 4;
     if ((pkt->hdr.tkl > 0) && (pkt->hdr.tkl != pkt->tok.len))
@@ -358,15 +357,14 @@ void coap_option_nibble(uint32_t value, uint8_t *nibble)
     }
 }
 
-int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint8_t *content, size_t content_len, uint8_t msgid_hi, uint8_t msgid_lo, const coap_buffer_t* tok, coap_responsecode_t rspcode, coap_content_type_t content_type)
+int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint8_t *content, size_t content_len, uint16_t msgid, const coap_buffer_t* tok, coap_responsecode_t rspcode, coap_content_type_t content_type)
 {
     pkt->hdr.ver = 0x01;
     pkt->hdr.t = COAP_TYPE_ACK;
     pkt->hdr.tkl = 0;
     pkt->hdr.code = rspcode;
-    pkt->hdr.id[0] = msgid_hi;
-    pkt->hdr.id[1] = msgid_lo;
-    pkt->numopts = 1;
+    pkt->hdr.id = msgid;
+    pkt->numopts = 0;
 
     // need token in response
     if (tok) {
@@ -374,6 +372,8 @@ int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint
         pkt->tok = *tok;
     }
 
+    if (content_type != COAP_CONTENTTYPE_NONE) {
+        pkt->numopts = 1;
     // safe because 1 < MAXOPT
     pkt->opts[0].num = COAP_OPTION_CONTENT_FORMAT;
     pkt->opts[0].buf.p = scratch->p;
@@ -382,6 +382,7 @@ int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint
     scratch->p[0] = ((uint16_t)content_type & 0xFF00) >> 8;
     scratch->p[1] = ((uint16_t)content_type & 0x00FF);
     pkt->opts[0].buf.len = 2;
+    }
     pkt->payload.p = content;
     pkt->payload.len = content_len;
     return 0;

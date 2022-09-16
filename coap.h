@@ -9,6 +9,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stddef.h>
 
+
 #define MAXOPT 16
 
 //http://tools.ietf.org/html/rfc7252#section-3
@@ -20,7 +21,7 @@ typedef struct
     uint8_t code;               /* CoAP status code. Can be request (0.xx), success reponse (2.xx), 
                                  * client error response (4.xx), or rever error response (5.xx) 
                                  * For possible values, see http://tools.ietf.org/html/rfc7252#section-12.1 */
-    uint8_t id[2];
+    uint16_t id;                /* Message ID*/
 } coap_header_t;
 
 typedef struct
@@ -164,7 +165,7 @@ int coap_buffer_to_string(char *strbuf, size_t strbuflen, const coap_buffer_t *b
 const coap_option_t *coap_findOptions(const coap_packet_t *pkt, uint8_t num, uint8_t *count);
 int coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt);
 void coap_dump(const uint8_t *buf, size_t buflen, bool bare);
-int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint8_t *content, size_t content_len, uint8_t msgid_hi, uint8_t msgid_lo, const coap_buffer_t* tok, coap_responsecode_t rspcode, coap_content_type_t content_type);
+int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint8_t *content, size_t content_len, uint16_t msgid, const coap_buffer_t* tok, coap_responsecode_t rspcode, coap_content_type_t content_type);
 int coap_handle_req(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt);
 void coap_option_nibble(uint32_t value, uint8_t *nibble);
 
