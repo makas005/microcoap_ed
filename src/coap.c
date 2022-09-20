@@ -134,11 +134,9 @@ int coap_parseOption(coap_option_t *option, uint16_t *running_delta, const uint8
     if ((p + 1 + len) > (*buf + buflen))
         return COAP_ERR_OPTION_TOO_BIG;
 
-    //printf("option num=%d\n", delta + *running_delta);
     option->num = delta + *running_delta;
     option->buf.p = p+1;
     option->buf.len = len;
-    //coap_dump(p+1, len, false);
 
     // advance buf
     *buf = p + 1 + len;
@@ -157,8 +155,6 @@ int coap_parseOptionsAndPayload(coap_option_t *options, uint8_t *numOptions, coa
     int rc;
     if (p > end)
         return COAP_ERR_OPTION_OVERRUNS_PACKET;   // out of bounds
-
-    //coap_dump(p, end - p);
 
     // 0xFF is payload marker
     while((optionIndex < *numOptions) && (p < end) && (*p != 0xFF))
@@ -212,17 +208,13 @@ int coap_parse(coap_packet_t *pkt, const uint8_t *buf, size_t buflen)
 {
     int rc;
 
-    // coap_dump(buf, buflen, false);
-
     if (0 != (rc = coap_parseHeader(&pkt->hdr, buf, buflen)))
         return rc;
-//    coap_dumpHeader(&hdr);
     if (0 != (rc = coap_parseToken(&pkt->tok, &pkt->hdr, buf, buflen)))
         return rc;
     pkt->numopts = MAXOPT;
     if (0 != (rc = coap_parseOptionsAndPayload(pkt->opts, &(pkt->numopts), &(pkt->payload), &pkt->hdr, buf, buflen)))
         return rc;
-//    coap_dumpOptions(opts, numopt);
     return 0;
 }
 
