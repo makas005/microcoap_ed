@@ -168,6 +168,7 @@ void coap_dump(const uint8_t *buf, size_t buflen, bool bare);
 int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint8_t *content, size_t content_len, uint16_t msgid, const coap_buffer_t* tok, coap_responsecode_t rspcode, coap_content_type_t content_type);
 int coap_handle_req(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt);
 void coap_option_nibble(uint32_t value, uint8_t *nibble);
+void coap_order_options(coap_option_t *opts, uint8_t num_opts, uint8_t* ordered_indices);
 
 #ifdef __cplusplus
 }

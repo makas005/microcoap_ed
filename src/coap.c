@@ -288,6 +288,9 @@ int coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
     // inject options
     p += pkt->hdr.tkl;
 
+    uint8_t option_indices[MAXOPT] = {0};
+    coap_order_options(pkt->opts, pkt->numopts, option_indices);
+
     for (i=0;i<pkt->numopts;i++)
     {
         uint32_t optDelta;
@@ -297,7 +300,7 @@ int coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
              return COAP_ERR_BUFFER_TOO_SMALL;
         optDelta = pkt->opts[i].num - running_delta;
         coap_option_nibble(optDelta, &delta);
-        coap_option_nibble((uint32_t)pkt->opts[i].buf.len, &len);
+        coap_option_nibble((uint32_t)pkt->opts[option_indices[i]].buf.len, &len);
 
         *p++ = (0xFF & (delta << 4 | len));
         if (delta == 13)
@@ -312,18 +315,18 @@ int coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
         }
         if (len == 13)
         {
-            *p++ = (pkt->opts[i].buf.len - 13);
+            *p++ = (pkt->opts[option_indices[i]].buf.len - 13);
         }
         else
         if (len == 14)
   	    {
-            *p++ = (pkt->opts[i].buf.len >> 8);
-            *p++ = (0xFF & (pkt->opts[i].buf.len-269));
+            *p++ = (pkt->opts[option_indices[i]].buf.len >> 8);
+            *p++ = (0xFF & (pkt->opts[option_indices[i]].buf.len-269));
         }
 
-        memcpy(p, pkt->opts[i].buf.p, pkt->opts[i].buf.len);
-        p += pkt->opts[i].buf.len;
-        running_delta = pkt->opts[i].num;
+        memcpy(p, pkt->opts[option_indices[i]].buf.p, pkt->opts[option_indices[i]].buf.len);
+        p += pkt->opts[option_indices[i]].buf.len;
+        running_delta = pkt->opts[option_indices[i]].num;
     }
 
     opts_len = (p - buf) - 4;   // number of bytes used by options
@@ -388,3 +391,33 @@ int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint
     return 0;
 }
 
+void coap_order_options(coap_option_t *opts, uint8_t num_opts, uint8_t* ordered_indices)
+{
+    if(num_opts == 1) {
+        *ordered_indices = 0;
+        return;
+    }
+
+    uint8_t i, key;
+    int8_t j;
+    /*initialize ordered_incices in range from 0...num_opts,
+    reflecting the current order in opts[]*/
+    for(i = 0; i < num_opts; i++) {
+        ordered_indices[i] = i;
+    }
+
+
+    for (i = 1; i < num_opts; i++) {
+        key = opts[ordered_indices[i]].num;
+        j = i - 1;
+  
+        /* Move elements of arr[0..i-1], that are
+          greater than key, to one position ahead
+          of their current position */
+        while (j >= 0 && opts[ordered_indices[j]].num > key) {
+            ordered_indices[j + 1] = ordered_indices[j];
+            j--;
+        }
+        ordered_indices[j + 1] = i;
+    }
+}
