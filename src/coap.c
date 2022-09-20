@@ -251,7 +251,7 @@ int coap_buffer_to_string(char *strbuf, size_t strbuflen, const coap_buffer_t *b
     return 0;
 }
 
-int coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
+coap_error_t coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
 {
     size_t opts_len = 0;
     size_t i;
@@ -261,6 +261,9 @@ int coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
     // build header
     if (*buflen < (4U + pkt->hdr.tkl))
         return COAP_ERR_BUFFER_TOO_SMALL;
+    if (pkt->hdr.ver != 1) {
+        return COAP_ERR_VERSION_NOT_1;
+    }
 
     buf[0] = (pkt->hdr.ver & 0x03) << 6;
     buf[0] |= (pkt->hdr.t & 0x03) << 4;
@@ -270,16 +273,20 @@ int coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
     
     // inject token
     p = buf + 4;
+    if(pkt->hdr.tkl > 8) {
+        return COAP_ERR_TOKEN_TOO_LONG;
+    }
+
     if ((pkt->hdr.tkl > 0) && (pkt->hdr.tkl != pkt->tok.len))
-        return COAP_ERR_UNSUPPORTED;
+        return COAP_ERR_TOKEN_LENGTH_MISMATCH;
     
     if (pkt->hdr.tkl > 0)
         memcpy(p, pkt->tok.p, pkt->hdr.tkl);
 
-    // // http://tools.ietf.org/html/rfc7252#section-3.1
-    // inject options
     p += pkt->hdr.tkl;
 
+    // // http://tools.ietf.org/html/rfc7252#section-3.1
+    // inject options
     uint8_t option_indices[MAXOPT] = {0};
     coap_order_options(pkt->opts, pkt->numopts, option_indices);
 
@@ -333,7 +340,7 @@ int coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
     }
     else
         *buflen = opts_len + 4;
-    return 0;
+    return COAP_ERR_NONE;
 }
 
 void coap_option_nibble(uint32_t value, uint8_t *nibble)
@@ -383,7 +390,7 @@ int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint
     return 0;
 }
 
-void coap_order_options(coap_option_t *opts, uint8_t num_opts, uint8_t* ordered_indices)
+void coap_order_options(const coap_option_t *opts, const uint8_t num_opts, uint8_t* ordered_indices)
 {
     if(num_opts == 1) {
         *ordered_indices = 0;

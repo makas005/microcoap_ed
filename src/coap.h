@@ -131,6 +131,8 @@ typedef enum
     COAP_ERR_BUFFER_TOO_SMALL = 9,
     COAP_ERR_UNSUPPORTED = 10,
     COAP_ERR_OPTION_DELTA_INVALID = 11,
+    COAP_ERR_TOKEN_LENGTH_MISMATCH = 12,    /**< Only used in building coap, when tkl in header mismatch with token buffer */
+    COAP_ERR_TOKEN_TOO_LONG = 13           /**< Only used in building coap, when tkl in header > 8 */
 } coap_error_t;
 
 ///////////////////////
@@ -163,12 +165,12 @@ void coap_dumpPacket(coap_packet_t *pkt);
 int coap_parse(coap_packet_t *pkt, const uint8_t *buf, size_t buflen);
 int coap_buffer_to_string(char *strbuf, size_t strbuflen, const coap_buffer_t *buf);
 const coap_option_t *coap_findOptions(const coap_packet_t *pkt, uint8_t num, uint8_t *count);
-int coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt);
+coap_error_t coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt);
 void coap_dump(const uint8_t *buf, size_t buflen, bool bare);
 int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint8_t *content, size_t content_len, uint16_t msgid, const coap_buffer_t* tok, coap_responsecode_t rspcode, coap_content_type_t content_type);
 int coap_handle_req(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt);
 void coap_option_nibble(uint32_t value, uint8_t *nibble);
-void coap_order_options(coap_option_t *opts, uint8_t num_opts, uint8_t* ordered_indices);
+void coap_order_options(const coap_option_t *opts, const uint8_t num_opts, uint8_t* ordered_indices);
 
 #ifdef __cplusplus
 }
