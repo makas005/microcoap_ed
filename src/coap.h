@@ -161,11 +161,14 @@ typedef struct
 
 
 ///////////////////////
+coap_error_t coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt);
+void coap_header_add_token(coap_packet_t *pkt, const uint8_t* token, const size_t len);
+
 void coap_dumpPacket(coap_packet_t *pkt);
 int coap_parse(coap_packet_t *pkt, const uint8_t *buf, size_t buflen);
 int coap_buffer_to_string(char *strbuf, size_t strbuflen, const coap_buffer_t *buf);
 const coap_option_t *coap_findOptions(const coap_packet_t *pkt, uint8_t num, uint8_t *count);
-coap_error_t coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt);
+
 void coap_dump(const uint8_t *buf, size_t buflen, bool bare);
 int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint8_t *content, size_t content_len, uint16_t msgid, const coap_buffer_t* tok, coap_responsecode_t rspcode, coap_content_type_t content_type);
 int coap_handle_req(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt);

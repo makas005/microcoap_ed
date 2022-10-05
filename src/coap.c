@@ -343,6 +343,13 @@ coap_error_t coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
     return COAP_ERR_NONE;
 }
 
+void coap_header_add_token(coap_packet_t *pkt, const uint8_t* token, const size_t len)
+{
+    pkt->hdr.tkl = len;
+    pkt->tok.len = len;
+    pkt->tok.p = token;
+}
+
 void coap_option_nibble(uint32_t value, uint8_t *nibble)
 {
     if (value<13)
