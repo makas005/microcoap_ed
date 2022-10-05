@@ -11,4 +11,5 @@ All functions regarding network operation are removed, leaving only encode and d
 Following libraries or parts of libraries are used (with licenses):
 |Library|License|Description|
 |---|---|---|
-|Byte Order Conversion|[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0) / [BSD 2-Clause](https://github.com/staropram/cantcoap/blob/master/LICENSE)|Content of byte_order.h original by Furuhashi Sadayuki (MessagePack) under Apache License, Version 2.0, then modified by Ashley Mills (CantCoap) under BSD 2-Clause License|
+|Byte Order Conversion (as part of cantcoap)|[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0) / [BSD 2-Clause](https://github.com/staropram/cantcoap/blob/master/LICENSE)|Content of byte_order.h original by Furuhashi Sadayuki (MessagePack) under Apache License, Version 2.0, then modified by Ashley Mills (CantCoap) under BSD 2-Clause License|
+|cantcoap|[BSD 2-Clause](https://github.com/staropram/cantcoap/blob/master/LICENSE)|

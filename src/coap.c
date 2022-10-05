@@ -343,6 +343,19 @@ coap_error_t coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
     return COAP_ERR_NONE;
 }
 
+bool coap_header_init(coap_packet_t *pkt, const coap_msgtype_t type, const coap_code_t method, const uint16_t id)
+{
+    //type options out ouf bound
+    if (type < 0 || type > 3) {
+        return false;
+    }
+
+    pkt->hdr.ver = 1; //Version must be always 1 according to https://www.rfc-editor.org/rfc/rfc7252#section-3
+    pkt->hdr.t = type;
+    pkt->hdr.code = method;
+    pkt->hdr.id = id;
+}
+
 void coap_header_add_token(coap_packet_t *pkt, const uint8_t* token, const size_t len)
 {
     pkt->hdr.tkl = len;
@@ -366,7 +379,7 @@ void coap_option_nibble(uint32_t value, uint8_t *nibble)
     }
 }
 
-int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint8_t *content, size_t content_len, uint16_t msgid, const coap_buffer_t* tok, coap_responsecode_t rspcode, coap_content_type_t content_type)
+int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint8_t *content, size_t content_len, uint16_t msgid, const coap_buffer_t* tok, coap_code_t rspcode, coap_content_type_t content_type)
 {
     pkt->hdr.ver = 0x01;
     pkt->hdr.t = COAP_TYPE_ACK;
