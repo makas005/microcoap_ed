@@ -297,7 +297,7 @@ coap_error_t coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt)
 
         if (((size_t)(p-buf)) > *buflen)
              return COAP_ERR_BUFFER_TOO_SMALL;
-        optDelta = pkt->opts[i].num - running_delta;
+        optDelta = pkt->opts[option_indices[i]].num - running_delta;
         coap_option_nibble(optDelta, &delta);
         coap_option_nibble((uint32_t)pkt->opts[option_indices[i]].buf.len, &len);
 
