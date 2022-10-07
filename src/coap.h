@@ -215,11 +215,7 @@ coap_error_t coap_build(uint8_t *buf, size_t *buflen, const coap_packet_t *pkt);
 ///     @arg     COAP_TYPE_NONCON: Non-Confirmable Request
 ///     @arg     COAP_TYPE_ACK: Acknowledgement response
 ///     @arg     COAP_TYPE_RESET: Reset response
-/// @param method Request method(code), can be:
-///     @arg     COAP_METHOD_GET
-///     @arg     COAP_METHOD_POST
-///     @arg     COAP_METHOD_PUT
-///     @arg     COAP_METHOD_DELETE
+/// @param method Request method(code), must be one of coap_code_t
 /// @param id Message ID
 /// @return True if init was successful, false if not (Parameters invalid)
 bool coap_header_init(coap_packet_t *pkt, const coap_msgtype_t type, const coap_code_t method, const uint16_t id);
@@ -229,6 +225,13 @@ bool coap_header_init(coap_packet_t *pkt, const coap_msgtype_t type, const coap_
 /// @param token Pointer to token array
 /// @param len Length of token
 void coap_header_add_token(coap_packet_t *pkt, const uint8_t* token, const size_t len);
+
+/// @brief Add an option to the packet
+/// @param pkt Packet pointer to store data to
+/// @param option Option definition/option number
+/// @param option_pt Option pointer to buffer that is stored as option bytes
+/// @param option_pt_len Length of option bytes
+void coap_add_option(coap_packet_t *pkt, coap_option_num_t option, uint8_t* option_pt, size_t option_pt_len);
 
 void coap_dumpPacket(coap_packet_t *pkt);
 int coap_parse(coap_packet_t *pkt, const uint8_t *buf, size_t buflen);

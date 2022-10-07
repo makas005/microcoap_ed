@@ -354,6 +354,7 @@ bool coap_header_init(coap_packet_t *pkt, const coap_msgtype_t type, const coap_
     pkt->hdr.t = type;
     pkt->hdr.code = method;
     pkt->hdr.id = id;
+    return true;
 }
 
 void coap_header_add_token(coap_packet_t *pkt, const uint8_t* token, const size_t len)
@@ -361,6 +362,15 @@ void coap_header_add_token(coap_packet_t *pkt, const uint8_t* token, const size_
     pkt->hdr.tkl = len;
     pkt->tok.len = len;
     pkt->tok.p = token;
+}
+
+
+void coap_add_option(coap_packet_t *pkt, coap_option_num_t option, uint8_t* option_pt, size_t option_pt_len)
+{
+    pkt->opts[pkt->numopts].buf.p = option_pt;
+    pkt->opts[pkt->numopts].buf.len = option_pt_len;
+    pkt->opts[pkt->numopts].num = option;
+    pkt->numopts++;
 }
 
 void coap_option_nibble(uint32_t value, uint8_t *nibble)
