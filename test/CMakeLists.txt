@@ -1,1 +1,2 @@
 add_subdirectory(coap_build)
+add_subdirectory(coap_parse)
