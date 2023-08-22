@@ -373,6 +373,52 @@ void coap_add_option(coap_packet_t *pkt, coap_option_num_t option, uint8_t* opti
     pkt->numopts++;
 }
 
+uint8_t coap_make_option_blockwise(uint8_t *option_buffer, const coap_blocksize_t szx, const bool m, const uint32_t num)
+{
+    if(szx > 6 || szx < 0 || num > 1048576)
+    {
+        return 0;
+    }
+
+    uint8_t option_length = 0;
+    if(num < 16) {
+        /* According to RFC7959 this is the option representation for 4 bit num:
+           0 1 2 3 4 5 6 7
+          +-+-+-+-+-+-+-+-+
+          |  NUM  |M| SZX |
+          +-+-+-+-+-+-+-+-+
+        */
+        option_length = 1;
+        *option_buffer = ((num & 0x0F) << 4) | (m << 3) | (szx & 0x07);
+    }
+    else if (num < 4096) {
+        /* According to RFC7959 this is the option representation for 12 bit num:
+           0                   1
+           0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |          NUM          |M| SZX |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        */
+        option_length = 2;
+        *option_buffer = (num >> 4) & 0xFF;
+        *(option_buffer + 1) = ((num & 0x0F) << 4) | (m << 3) | (szx & 0x07);
+    }
+    else {
+        /* According to RFC7959 this is the option representation for 12 bit num:
+           0                   1                   2
+           0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |                   NUM                 |M| SZX |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        */
+        option_length = 3;
+        *option_buffer = (num >> 12) & 0xFF;
+        *(option_buffer + 1) = (num >> 4) & 0xFF;
+        *(option_buffer + 2) = ((num & 0x0F) << 4) | (m << 3) | (szx & 0x07);
+    }
+    return option_length;
+}
+
 void coap_option_nibble(uint32_t value, uint8_t *nibble)
 {
     if (value<13)

@@ -235,6 +235,35 @@ void coap_header_add_token(coap_packet_t *pkt, const uint8_t* token, const size_
 /// @param option_pt_len Length of option bytes
 void coap_add_option(coap_packet_t *pkt, coap_option_num_t option, uint8_t* option_pt, size_t option_pt_len);
 
+typedef enum  {
+    COAP_BLOCKSIZE_16 = 0,
+    COAP_BLOCKSIZE_32,
+    COAP_BLOCKSIZE_64,
+    COAP_BLOCKSIZE_128,
+    COAP_BLOCKSIZE_256,
+    COAP_BLOCKSIZE_512,
+    COAP_BLOCKSIZE_1024
+} coap_blocksize_t;
+
+/// @brief Creates option BLOCK1 or BLOCK2
+/// Takes information about block size and creates option representation of it. The output size varies, depending on how
+/// large num is. Output length varies from 1 to 3 bytes. 
+/// @param[out] option_buffer Buffer to store created option to. MUST be at least 1 byte if num < 15,
+/// 2 byte if num < 4096, and 3 byte if num < 1.048.576. Num above 1.048.576 is not supported by RFC7959.
+/// @param[in] szx Size of the block. Can be one of the following values:
+///     Can be one of the following values:
+///         @arg COAP_BLOCKSIZE_16: 16 byte Block size
+///         @arg COAP_BLOCKSIZE_32: 32 byte Block size
+///         @arg COAP_BLOCKSIZE_64: 64 byte Block size
+///         @arg COAP_BLOCKSIZE_128: 128 byte Block size
+///         @arg COAP_BLOCKSIZE_256: 256 byte Block size
+///         @arg COAP_BLOCKSIZE_512: 512 byte Block size
+///         @arg COAP_BLOCKSIZE_1024: 1024 byte Block size
+/// @param[in] m More Flag. If set, there are more messages after the current one.
+/// @param[in] num Block number. Block 0 is starting block.
+/// @return Size of the block option.
+uint8_t coap_make_option_blockwise(uint8_t *option_buffer, const coap_blocksize_t szx, const bool m, const uint32_t num);
+
 void coap_dumpPacket(coap_packet_t *pkt);
 int coap_parse(coap_packet_t *pkt, const uint8_t *buf, size_t buflen);
 int coap_buffer_to_string(char *strbuf, size_t strbuflen, const coap_buffer_t *buf);
