@@ -242,6 +242,35 @@ const coap_option_t *coap_findOptions(const coap_packet_t *pkt, uint8_t num, uin
     return first;
 }
 
+coap_blocksize_t coap_option_blockwise_get_szx(const coap_option_t *block_option) {
+    uint8_t lsb = block_option->buf.p[block_option->buf.len - 1]; // last byte in option buffer stores szx.
+    return (lsb & 0x07); //Last three bits are szx encoded.
+}
+
+uint32_t coap_option_blockwise_get_num(const coap_option_t *block_option)
+{
+    uint32_t num = 0;
+    if(block_option->buf.len == 1) {
+        //num is 4 MSBs
+        num = block_option->buf.p[0] >> 4;
+    }
+    else if (block_option->buf.len == 2) {
+        //num is complete first byte and 4 MSBs of second byte
+        num = (block_option->buf.p[0] << 8) & (block_option->buf.p[1] >> 4);
+    }
+    else {
+        //num two first bytes complete and 4 MSBs of third byte
+        num = (block_option->buf.p[0] << 16) & (block_option->buf.p[1] << 8) & (block_option->buf.p[2] >> 4);
+    }
+    return num;
+}
+
+bool coap_option_blockwise_get_m(const coap_option_t *block_option)
+{
+    uint8_t lsb = block_option->buf.p[block_option->buf.len - 1]; // last byte in option buffer stores m.
+    return (lsb & 0x08); //Fourth last bit is m flag.
+}
+
 int coap_buffer_to_string(char *strbuf, size_t strbuflen, const coap_buffer_t *buf)
 {
     if (buf->len+1 > strbuflen)

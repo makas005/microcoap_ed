@@ -269,6 +269,25 @@ int coap_parse(coap_packet_t *pkt, const uint8_t *buf, size_t buflen);
 int coap_buffer_to_string(char *strbuf, size_t strbuflen, const coap_buffer_t *buf);
 const coap_option_t *coap_findOptions(const coap_packet_t *pkt, uint8_t num, uint8_t *count);
 
+/// @brief Retrieves blocksize (szx) from a block1 (option no. 27) or block2 (option no. 23) option.
+/// Make sure to pass a valid block option. If passed coap_option_t is neither block1 or block2, behavior is undefined!
+/// @param block_option Pointer to option object, retrieved for example by coap_findOptions().
+/// @return Blocksize enum.
+coap_blocksize_t coap_option_blockwise_get_szx(const coap_option_t *block_option);
+
+/// @brief Retrieves block number (num) from a block1 (option no. 27) or block2 (option no. 23) option.
+/// Make sure to pass a valid block option. If passed coap_option_t is neither block1 or block2, behavior is undefined!
+/// @param block_option Pointer to option object, retrieved for example by coap_findOptions().
+/// @return Number of block.
+uint32_t coap_option_blockwise_get_num(const coap_option_t *block_option);
+
+/// @brief Retrieves the more messages flag (m) from a block1 (option no. 27) or block2 (option no. 23) option.
+/// Make sure to pass a valid block option. If passed coap_option_t is neither block1 or block2, behavior is undefined!
+/// @param block_option Pointer to option object, retrieved for example by coap_findOpti
+/// @return More messages flag.
+bool coap_option_blockwise_get_m(const coap_option_t *block_option);
+
+
 void coap_dump(const uint8_t *buf, size_t buflen, bool bare);
 int coap_make_response(coap_rw_buffer_t *scratch, coap_packet_t *pkt, const uint8_t *content, size_t content_len, uint16_t msgid, const coap_buffer_t* tok, coap_code_t rspcode, coap_content_type_t content_type);
 int coap_handle_req(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt);
