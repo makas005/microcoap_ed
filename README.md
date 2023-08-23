@@ -7,6 +7,25 @@ For general information on the constrained applications protocol (CoAP), see htt
 
 All functions regarding network operation are removed, leaving only encode and decode functions.
 
+## Building
+microcoap_ed uses CMake as a build system. To use cmake create a build directory and navigate into it, then run 
+`cmake <path_to_source>`. If you build directory is inside the projects root dir, use `cmake ..` for example.
+
+CMake will use the default generator, this will most likely be Unix Makefiles on Unix systems or Visual Studio project 
+files on Windows systems. To change use the `-G` option. If you want to build using mingw on Windows for example, run
+`cmake -G "MinGW Makefiles" ..`, if you want to use Ninja run `cmake -G Ninja ..`.
+
+CMake will now create the build files. Run the build tool you created the build files for 
+(`make` or `ninja` for example), or use `cmake --build .` to let CMake run the build for you. Output library will be in
+`build/src`.
+
+## Running tests
+To run the tests, run CMake with target group test: `cmake [-G "Your Generator"] -DTARGET_GROUP=test ..`.
+Then build: `cmake --build .`.
+
+You can then use ctest to run all tests by simply calling `ctest`.
+
+
 ## Licenses
 Following libraries or parts of libraries are used (with licenses):
 |Library|License|Description|
