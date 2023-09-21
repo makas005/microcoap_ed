@@ -256,11 +256,11 @@ uint32_t coap_option_blockwise_get_num(const coap_option_t *block_option)
     }
     else if (block_option->buf.len == 2) {
         //num is complete first byte and 4 MSBs of second byte
-        num = (block_option->buf.p[0] << 8) & (block_option->buf.p[1] >> 4);
+        num = (block_option->buf.p[0] << 4) | (block_option->buf.p[1] >> 4);
     }
     else {
         //num two first bytes complete and 4 MSBs of third byte
-        num = (block_option->buf.p[0] << 16) & (block_option->buf.p[1] << 8) & (block_option->buf.p[2] >> 4);
+        num = (block_option->buf.p[0] << 12) | (block_option->buf.p[1] << 4) | (block_option->buf.p[2] >> 4);
     }
     return num;
 }
